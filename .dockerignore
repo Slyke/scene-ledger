@@ -1,0 +1,24 @@
+.git
+.gitignore
+
+# Local runtime and generated data
+data
+images
+thumbs
+logs
+node_modules
+npm-debug.log*
+*.log
+*.sqlite
+*.db
+*.db-*
+
+# Local env/secrets
+.env
+.env.*
+!.env.example
+
+# Local editor/tooling files
+.DS_Store
+.vscode
+.idea

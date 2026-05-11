@@ -1,0 +1,34 @@
+services:
+  scene-ledger-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scene-ledger-api
+    hostname: scene-ledger-api
+    environment:
+      PORT: "3000"
+      DB_DRIVER: sqlite
+      DB_PATH: /app/data/cctv-scene.db
+      IMAGE_ROOT: /app/images
+      IMAGE_STORAGE_ROOT: /app/data/images
+      THUMB_STORAGE_ROOT: /app/data/thumbs
+      LOG_CONSOLE_FORMAT: text
+      LOG_FILE_PATH: /app/logs/app.jsonl
+    volumes:
+      - scene-ledger-data:/app/data
+      - scene-ledger-logs:/app/logs
+      - ./images:/app/images:ro
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+volumes:
+  scene-ledger-data:
+  scene-ledger-logs:

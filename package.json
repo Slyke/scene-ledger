@@ -1,0 +1,26 @@
+{
+  "name": "scene-ledger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "check": "node scripts/check.js",
+    "retention": "node scripts/retention.js",
+    "error-add": "node error_gen.js --action add --error-file ./src/errors.json",
+    "error-delete": "node error_gen.js --action delete --error-file ./src/errors.json",
+    "error-rm": "node error_gen.js --action delete --error-file ./src/errors.json",
+    "error-validate": "node error_gen.js --action validate --error-file ./src/errors.json"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "sharp": "^0.34.4"
+  }
+}
