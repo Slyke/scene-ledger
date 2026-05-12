@@ -1,0 +1,75 @@
+services:
+  ollama-mock:
+    image: node:22-bookworm-slim
+    working_dir: /mock
+    environment:
+      FIXTURE_ROOT: /fixtures/images
+      PORT: "11434"
+    volumes:
+      - ./ollama-mock:/mock:ro
+      - ./fixtures:/fixtures:ro
+    command: ["node", "/mock/server.js"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:11434/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  scene-ledger-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      PORT: "3000"
+      DB_DRIVER: sqlite
+      DB_PATH: /app/data/e2e-scene-ledger.db
+      IMAGE_ROOT: /app/images
+      IMAGE_STORAGE_ROOT: /app/data/images
+      THUMB_STORAGE_ROOT: /app/data/thumbs
+      OLLAMA_URL: http://ollama-mock:11434/api/chat
+      OLLAMA_MODEL: e2e-vision-model
+      OLLAMA_TIMEOUT_MS: "10000"
+      ANALYSE_RATE_LIMIT_PER_MINUTE: "1000"
+      LOG_CONSOLE_FORMAT: text
+      LOG_FILE_PATH: /app/logs/app.jsonl
+    volumes:
+      - scene-ledger-e2e-data:/app/data
+      - scene-ledger-e2e-logs:/app/logs
+      - ./fixtures/images:/app/images:ro
+      - ./api-entrypoint.sh:/app/e2e-api-entrypoint.sh:ro
+    command: ["sh", "/app/e2e-api-entrypoint.sh"]
+    ports:
+      - "127.0.0.1:3100:3000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      ollama-mock:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "scripts/healthcheck.js"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+  e2e-tests:
+    image: node:22-bookworm-slim
+    working_dir: /e2e
+    environment:
+      API_BASE_URL: http://scene-ledger-api:3000
+      ERROR_FILE_PATH: /workspace/src/errors.json
+      E2E_VERBOSE: ${E2E_VERBOSE:-0}
+      FIXTURE_ROOT: /e2e/fixtures/images
+    volumes:
+      - .:/e2e:ro
+      - ../src/errors.json:/workspace/src/errors.json:ro
+    command: ["node", "/e2e/tests/run.js"]
+    depends_on:
+      scene-ledger-api:
+        condition: service_healthy
+
+volumes:
+  scene-ledger-e2e-data:
+  scene-ledger-e2e-logs:

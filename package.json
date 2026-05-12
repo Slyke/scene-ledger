@@ -10,6 +10,7 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "check": "node scripts/check.js",
+    "e2e": "sh e2e/run.sh",
     "retention": "node scripts/retention.js",
     "error-add": "node error_gen.js --action add --error-file ./src/errors.json",
     "error-delete": "node error_gen.js --action delete --error-file ./src/errors.json",
